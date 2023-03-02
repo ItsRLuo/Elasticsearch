@@ -1,0 +1,66 @@
+<script type="text/javascript">
+	function fetchText(elasticSearchResultData, htmlDiv) {
+		let html = '<ul>'
+		elasticSearchResultData.forEach((result) => {
+			html += `<li>${result._source.random_text}</li>`
+		})
+		html+='</ul>'
+	    document.getElementById(htmlDiv).innerHTML = html
+	}
+
+
+	function loadAllSearch() {
+		fetch("http://localhost:9200/test/_search?pretty=")
+			.then((response) => response.json())
+		  	.then(
+			  	(data) => {
+			  		if (data.hits && data.hits.hits) {
+			  			fetchText(data.hits.hits, 'all_result')
+				   	}
+			  	}
+		);
+	}
+
+	function searchWord() {
+		let input = document.getElementById('searchbar').value
+		const options = {
+		  method: 'POST',
+		  headers: {'Content-Type': 'application/json'},
+		  body: `{"query":{"match":{"random_text":{"query":"${input}"}}}}`
+		};
+		
+		fetch("http://localhost:9200/test/_search?pretty=", options)
+		  .then((response) => response.json())
+		  .then(
+		  	(data) => {
+		  		if (data.hits && data.hits.hits) {
+		  			fetchText(data.hits.hits, 'search_result')
+			   	}
+		  	}
+	  	);
+	    
+	}
+</script>
+
+
+<!DOCTYPE html>
+<html>
+	
+<head>
+	<title>
+		 Search Bar
+	</title>
+</head>
+
+<body onload="loadAllSearch()">
+	<input id="searchbar" onkeyup="searchWord()" type="text"
+		name="search" placeholder="Search">
+	<p>All Result:</p>
+	<div id='all_result'></div>
+	<p>Search Result:</p>
+	<div id='search_result'></div>
+</body>
+
+</html>
+
+
